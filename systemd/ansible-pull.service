@@ -5,10 +5,11 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-# GIT_REPO_URL anpassen; --only-if-changed führt nur bei neuen Commits aus
+# WICHTIG: Ersetze die URL durch dein eigenes Repository
 ExecStart=/usr/bin/ansible-pull \
     -U https://github.com/DEIN_ORG/server-config.git \
     -C main \
+    -r requirements.yml \
     -i inventory.ini \
     --only-if-changed \
     site.yml

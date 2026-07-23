@@ -26,9 +26,8 @@ server-config/
 ```bash
 # 1. Repo-URL in systemd/ansible-pull.service anpassen (DEIN_ORG/server-config)
 
-# 2. Ansible + Collection installieren
+# 2. Ansible installieren
 apt update && apt install -y ansible git
-ansible-galaxy collection install -r requirements.yml
 
 # 3. systemd-Units installieren
 cp systemd/ansible-pull.service /etc/systemd/system/

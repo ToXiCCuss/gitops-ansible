@@ -1,16 +1,8 @@
 ---
-- name: Paketindex aktualisieren
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
-
-- name: System-Pakete aktualisieren
-  apt:
-    upgrade: dist
-
-- name: Grundlegende Pakete installieren
+- name: Erforderliche System-Pakete installieren
   apt:
     name:
+      - python3-apt
       - ufw
       - fail2ban
       - unattended-upgrades
@@ -19,21 +11,34 @@
       - htop
       - vim
     state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: System-Pakete aktualisieren
+  apt:
+    upgrade: dist
+    cache_valid_time: 3600
 
 - name: Zeitzone setzen
   community.general.timezone:
     name: "{{ server_timezone }}"
 
 # --- Firewall (UFW) ---
-- name: UFW - Standard-Policy: eingehend verweigern
+- name: UFW eingehend verweigern
   community.general.ufw:
-    direction: incoming
-    policy: deny
+    direction: "incoming"
+    policy: "deny"
 
-- name: UFW - Standard-Policy: ausgehend erlauben
+- name: UFW ausgehend erlauben
   community.general.ufw:
-    direction: outgoing
-    policy: allow
+    direction: "outgoing"
+    policy: "allow"
+
+- name: UFW - SSH-Zugriff erlauben (bevor UFW aktiviert wird)
+  community.general.ufw:
+    rule: allow
+    port: "{{ ssh_port }}"
+    proto: tcp
 
 - name: UFW - erlaubte TCP-Ports öffnen
   community.general.ufw:
