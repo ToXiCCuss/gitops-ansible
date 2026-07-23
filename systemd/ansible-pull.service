@@ -1,0 +1,14 @@
+[Unit]
+Description=Ansible Pull - Server-Basis-Konfiguration synchronisieren
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+# GIT_REPO_URL anpassen; --only-if-changed führt nur bei neuen Commits aus
+ExecStart=/usr/bin/ansible-pull \
+    -U https://github.com/DEIN_ORG/server-config.git \
+    -C main \
+    -i inventory.ini \
+    --only-if-changed \
+    site.yml

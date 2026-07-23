@@ -1,0 +1,10 @@
+[Unit]
+Description=Führt ansible-pull.service periodisch aus
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,7 @@
+# Verwaltet durch Ansible - manuelle Änderungen werden überschrieben
+Port {{ ssh_port }}
+PermitRootLogin {{ ssh_permit_root_login }}
+PasswordAuthentication {{ ssh_password_authentication }}
+PubkeyAuthentication yes
+X11Forwarding no
+MaxAuthTries 3

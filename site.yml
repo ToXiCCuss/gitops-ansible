@@ -1,0 +1,6 @@
+---
+- name: Basis-Konfiguration auf allen Servern
+  hosts: all
+  become: true
+  roles:
+    - base

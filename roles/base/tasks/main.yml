@@ -1,0 +1,90 @@
+---
+- name: Paketindex aktualisieren
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: System-Pakete aktualisieren
+  apt:
+    upgrade: dist
+
+- name: Grundlegende Pakete installieren
+  apt:
+    name:
+      - ufw
+      - fail2ban
+      - unattended-upgrades
+      - curl
+      - git
+      - htop
+      - vim
+    state: present
+
+- name: Zeitzone setzen
+  community.general.timezone:
+    name: "{{ server_timezone }}"
+
+# --- Firewall (UFW) ---
+- name: UFW - Standard-Policy: eingehend verweigern
+  community.general.ufw:
+    direction: incoming
+    policy: deny
+
+- name: UFW - Standard-Policy: ausgehend erlauben
+  community.general.ufw:
+    direction: outgoing
+    policy: allow
+
+- name: UFW - erlaubte TCP-Ports öffnen
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop: "{{ firewall_allowed_tcp_ports }}"
+
+- name: UFW - erlaubte UDP-Ports öffnen
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: udp
+  loop: "{{ firewall_allowed_udp_ports }}"
+
+- name: UFW aktivieren
+  community.general.ufw:
+    state: enabled
+
+# --- SSH-Hardening ---
+# Übersprungen, wenn der Host/Provider PublicKey-only + PermitRootLogin
+# bereits selbst korrekt konfiguriert (manage_ssh_config: false in defaults/main.yml)
+- name: sshd_config anpassen (PermitRootLogin, PasswordAuthentication, Port)
+  template:
+    src: sshd_config_overrides.j2
+    dest: /etc/ssh/sshd_config.d/99-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: sshd neustarten
+  when: manage_ssh_config
+
+# --- Unattended Upgrades ---
+- name: Unattended-Upgrades konfigurieren
+  template:
+    src: 50unattended-upgrades.j2
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+  when: unattended_upgrades_enabled
+
+- name: Automatische Update-Checks aktivieren
+  copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+  when: unattended_upgrades_enabled
+
+# --- Fail2ban ---
+- name: Fail2ban aktivieren und starten
+  service:
+    name: fail2ban
+    state: started
+    enabled: true
+  when: fail2ban_enabled
