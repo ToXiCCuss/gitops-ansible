@@ -4,4 +4,7 @@ PermitRootLogin {{ ssh_permit_root_login }}
 PasswordAuthentication {{ ssh_password_authentication }}
 PubkeyAuthentication yes
 X11Forwarding no
-MaxAuthTries 3
+MaxAuthTries {{ ssh_max_auth_tries }}
+ClientAliveInterval {{ ssh_client_alive_interval }}
+ClientAliveCountMax {{ ssh_client_alive_count_max }}
+Banner /etc/issue.net

@@ -3,8 +3,6 @@
   apt:
     name:
       - python3-apt
-      - ufw
-      - fail2ban
       - unattended-upgrades
       - curl
       - git
@@ -13,6 +11,14 @@
     state: present
     update_cache: yes
     cache_valid_time: 3600
+
+- name: UFW und Fail2ban entfernen
+  apt:
+    name:
+      - ufw
+      - fail2ban
+    state: absent
+    purge: yes
 
 - name: System-Pakete aktualisieren
   apt:
@@ -23,40 +29,53 @@
   community.general.timezone:
     name: "{{ server_timezone }}"
 
-# --- Firewall (UFW) ---
-- name: UFW eingehend verweigern
-  community.general.ufw:
-    direction: "incoming"
-    policy: "deny"
+# --- Kernel Hardening (sysctl) ---
+- name: Kernel-Parameter für Sicherheit optimieren
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_set: yes
+  loop:
+    - { name: 'net.ipv4.conf.all.accept_source_route', value: '0' }
+    - { name: 'net.ipv4.conf.default.accept_source_route', value: '0' }
+    - { name: 'net.ipv4.conf.all.accept_redirects', value: '0' }
+    - { name: 'net.ipv4.conf.default.accept_redirects', value: '0' }
+    - { name: 'net.ipv4.conf.all.secure_redirects', value: '0' }
+    - { name: 'net.ipv4.conf.default.secure_redirects', value: '0' }
+    - { name: 'net.ipv4.conf.all.send_redirects', value: '0' }
+    - { name: 'net.ipv4.conf.default.send_redirects', value: '0' }
+    - { name: 'net.ipv4.conf.all.rp_filter', value: '1' }
+    - { name: 'net.ipv4.conf.default.rp_filter', value: '1' }
+    - { name: 'net.ipv4.icmp_echo_ignore_broadcasts', value: '1' }
+    - { name: 'net.ipv4.icmp_ignore_bogus_error_responses', value: '1' }
+    - { name: 'net.ipv4.tcp_syncookies', value: '1' }
+    - { name: 'net.ipv6.conf.all.disable_ipv6', value: "{{ '1' if disable_ipv6 else '0' }}" }
+    - { name: 'net.ipv6.conf.default.disable_ipv6', value: "{{ '1' if disable_ipv6 else '0' }}" }
 
-- name: UFW ausgehend erlauben
-  community.general.ufw:
-    direction: "outgoing"
-    policy: "allow"
+# --- Shared Memory Hardening ---
+- name: /run/shm mit noexec und nosuid mounten
+  mount:
+    path: /run/shm
+    src: tmpfs
+    fstype: tmpfs
+    opts: "defaults,noexec,nosuid,nodev"
+    state: mounted
+  ignore_errors: yes # Falls /run/shm nicht existiert oder anders verwaltet wird
 
-- name: UFW - SSH-Zugriff erlauben (bevor UFW aktiviert wird)
-  community.general.ufw:
-    rule: allow
-    port: "{{ ssh_port }}"
-    proto: tcp
-
-- name: UFW - erlaubte TCP-Ports öffnen
-  community.general.ufw:
-    rule: allow
-    port: "{{ item }}"
-    proto: tcp
-  loop: "{{ firewall_allowed_tcp_ports }}"
-
-- name: UFW - erlaubte UDP-Ports öffnen
-  community.general.ufw:
-    rule: allow
-    port: "{{ item }}"
-    proto: udp
-  loop: "{{ firewall_allowed_udp_ports }}"
-
-- name: UFW aktivieren
-  community.general.ufw:
-    state: enabled
+# --- SSH-Banner ---
+- name: Login-Banner setzen
+  copy:
+    dest: /etc/issue.net
+    content: |
+      ***************************************************************************
+      *                              WARNUNG                                    *
+      *        Dies ist ein privates System. Unbefugter Zugriff verboten.       *
+      *        Alle Aktivitäten werden protokolliert.                           *
+      ***************************************************************************
+    owner: root
+    group: root
+    mode: '0644'
 
 # --- SSH-Hardening ---
 # Übersprungen, wenn der Host/Provider PublicKey-only + PermitRootLogin
@@ -85,11 +104,3 @@
       APT::Periodic::Update-Package-Lists "1";
       APT::Periodic::Unattended-Upgrade "1";
   when: unattended_upgrades_enabled
-
-# --- Fail2ban ---
-- name: Fail2ban aktivieren und starten
-  service:
-    name: fail2ban
-    state: started
-    enabled: true
-  when: fail2ban_enabled

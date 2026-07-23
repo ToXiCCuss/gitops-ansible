@@ -5,16 +5,18 @@ ssh_port: 22
 ssh_permit_root_login: "no"          # "yes" nur falls du unbedingt als root per Passwort ran musst
 ssh_password_authentication: "no"    # nur Key-Login erlauben
 
-# Firewall: zusätzlich zu SSH offene Ports (Web, Game-Server-Ports, etc.)
-firewall_allowed_tcp_ports:
-  - "{{ ssh_port }}"
-firewall_allowed_udp_ports: []
-
 # Automatische Sicherheitsupdates
 unattended_upgrades_enabled: true
 
 # Zeitzone
 server_timezone: "Europe/Berlin"
 
-# Fail2ban aktivieren (Schutz gegen SSH-Bruteforce)
-fail2ban_enabled: true
+# Hardening
+disable_ipv6: false                  # Auf true setzen, falls IPv6 nicht benötigt wird
+ssh_max_auth_tries: 3
+ssh_client_alive_interval: 300
+ssh_client_alive_count_max: 2
+
+# Automatische Reboots bei Kernel-Updates
+unattended_upgrades_reboot: false
+unattended_upgrades_reboot_time: "04:00"

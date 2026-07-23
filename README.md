@@ -1,8 +1,15 @@
 # server-config – Basis-GitOps-Grundgerüst
 
-Ansible-Rolle "base" für Updates, Firewall (UFW), SSH-Hardening, Fail2ban
-und automatische Sicherheitsupdates. Läuft per `ansible-pull` selbstständig
-auf jeder VM (Pull-Modell, kein zentraler Ansible-Host nötig).
+Ansible-Rolle "base" für Updates, SSH-Hardening (inkl. Banner & Timeouts), 
+Kernel-Hardening (sysctl) und automatische Sicherheitsupdates.
+Läuft per `ansible-pull` selbstständig auf jeder VM.
+
+## Hardening Features
+
+- **SSH**: Key-only Login, kein Root-Login, Session-Timeouts, Login-Banner.
+- **Kernel**: Schutz vor IP-Spoofing, Deaktivierung von ICMP-Redirects, TCP Syncookies.
+- **Dateisystem**: Shared Memory (`/run/shm`) Schutz (noexec, nosuid).
+- **Updates**: Vollautomatische Sicherheitsupdates via `unattended-upgrades`.
 
 ## Struktur
 
@@ -12,7 +19,7 @@ server-config/
 ├── site.yml                   # Haupt-Playbook
 ├── requirements.yml           # externe Ansible-Collections
 ├── roles/base/
-│   ├── defaults/main.yml      # anpassbare Variablen (Ports, Firewall-Regeln, ...)
+│   ├── defaults/main.yml      # anpassbare Variablen (Ports, ...)
 │   ├── tasks/main.yml         # eigentliche Konfiguration
 │   ├── templates/             # sshd- & unattended-upgrades-Configs
 │   └── handlers/main.yml
@@ -44,11 +51,6 @@ journalctl -u ansible-pull.service -f
 
 - **Vorher SSH-Key-Login testen**, bevor `ssh_password_authentication: "no"`
   greift – sonst sperrst du dich aus!
-- Firewall-Ports in `roles/base/defaults/main.yml` unter
-  `firewall_allowed_tcp_ports` / `_udp_ports` ergänzen (z. B. FiveM-Port,
-  Arcane-Port, DB-Port falls extern erreichbar).
-- Bei Bedarf pro Host/Gruppe eigene Werte über `group_vars/<gruppe>.yml`
-  überschreiben (z. B. andere Ports je nach VM).
 
 ## Änderungen ausrollen
 
