@@ -6,7 +6,7 @@ Runs independently on each VM via `ansible-pull`.
 
 ## Hardening Features
 
-- **SSH**: Key-only login, no root login, session timeouts, login banner.
+- **SSH**: Session-timeouts, login banner.
 - **Kernel**: Protection against IP spoofing, disabling ICMP redirects, TCP syncookies.
 - **File System**: Shared Memory (`/run/shm`) protection (noexec, nosuid).
 - **Updates**: Fully automatic security updates via `unattended-upgrades`.
@@ -49,8 +49,7 @@ journalctl -u ansible-pull.service -f
 
 ## Important Before First Rollout
 
-- **Test SSH Key login beforehand** before `ssh_password_authentication: "no"`
-  takes effect – otherwise you will be locked out!
+- **Ensure SSH access is configured**, as the hardening overrides might change settings.
 
 ## Rolling Out Changes
 

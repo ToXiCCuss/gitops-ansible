@@ -78,9 +78,9 @@
     mode: '0644'
 
 # --- SSH Hardening ---
-# Skipped if the host/provider already configures PublicKey-only + PermitRootLogin
+# Skipped if the host/provider already configures SSH hardening
 # correctly (manage_ssh_config: false in defaults/main.yml)
-- name: Configure sshd_config (PermitRootLogin, PasswordAuthentication, Port)
+- name: Configure sshd_config (Port, Timeouts, Banner)
   template:
     src: sshd_config_overrides.j2
     dest: /etc/ssh/sshd_config.d/99-hardening.conf

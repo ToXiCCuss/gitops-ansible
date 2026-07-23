@@ -2,8 +2,6 @@
 # SSH
 manage_ssh_config: false             # false = Ansible won't touch sshd_config (Host manages it)
 ssh_port: 22
-ssh_permit_root_login: "no"          # "yes" only if you strictly need root login via password
-ssh_password_authentication: "no"    # allow only key-based login
 
 # Automatic security updates
 unattended_upgrades_enabled: true
