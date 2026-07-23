@@ -1,5 +1,5 @@
 ---
-- name: Basis-Konfiguration auf allen Servern
+- name: Base configuration on all servers
   hosts: all
   become: true
   roles:

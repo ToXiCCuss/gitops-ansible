@@ -1,59 +1,59 @@
-# server-config – Basis-GitOps-Grundgerüst
+# server-config – Basic GitOps Framework
 
-Ansible-Rolle "base" für Updates, SSH-Hardening (inkl. Banner & Timeouts), 
-Kernel-Hardening (sysctl) und automatische Sicherheitsupdates.
-Läuft per `ansible-pull` selbstständig auf jeder VM.
+Ansible role "base" for updates, SSH hardening (including banners & timeouts), 
+kernel hardening (sysctl), and automatic security updates.
+Runs independently on each VM via `ansible-pull`.
 
 ## Hardening Features
 
-- **SSH**: Key-only Login, kein Root-Login, Session-Timeouts, Login-Banner.
-- **Kernel**: Schutz vor IP-Spoofing, Deaktivierung von ICMP-Redirects, TCP Syncookies.
-- **Dateisystem**: Shared Memory (`/run/shm`) Schutz (noexec, nosuid).
-- **Updates**: Vollautomatische Sicherheitsupdates via `unattended-upgrades`.
+- **SSH**: Key-only login, no root login, session timeouts, login banner.
+- **Kernel**: Protection against IP spoofing, disabling ICMP redirects, TCP syncookies.
+- **File System**: Shared Memory (`/run/shm`) protection (noexec, nosuid).
+- **Updates**: Fully automatic security updates via `unattended-upgrades`.
 
-## Struktur
+## Structure
 
 ```
 server-config/
-├── inventory.ini              # Server-Liste (nur zur Doku, ansible-pull nutzt lokalen Host)
-├── site.yml                   # Haupt-Playbook
-├── requirements.yml           # externe Ansible-Collections
+├── inventory.ini              # Server list (for documentation, ansible-pull uses local host)
+├── site.yml                   # Main playbook
+├── requirements.yml           # External Ansible collections
 ├── roles/base/
-│   ├── defaults/main.yml      # anpassbare Variablen (Ports, ...)
-│   ├── tasks/main.yml         # eigentliche Konfiguration
-│   ├── templates/             # sshd- & unattended-upgrades-Configs
+│   ├── defaults/main.yml      # Customizable variables (ports, ...)
+│   ├── tasks/main.yml         # Core configuration
+│   ├── templates/             # sshd & unattended-upgrades configs
 │   └── handlers/main.yml
 └── systemd/
     ├── ansible-pull.service
     └── ansible-pull.timer
 ```
 
-## Einmaliges Setup pro VM
+## Initial Setup per VM
 
 ```bash
-# 1. Repo-URL in systemd/ansible-pull.service anpassen (DEIN_ORG/server-config)
+# 1. Update the Repo URL in systemd/ansible-pull.service (YOUR_ORG/server-config)
 
-# 2. Ansible installieren
+# 2. Install Ansible
 apt update && apt install -y ansible git
 
-# 3. systemd-Units installieren
+# 3. Install systemd units
 cp systemd/ansible-pull.service /etc/systemd/system/
 cp systemd/ansible-pull.timer /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now ansible-pull.timer
 
-# 4. Ersten Lauf manuell anstoßen (optional, sonst läuft er nach OnBootSec)
+# 4. Trigger first run manually (optional, otherwise it runs after OnBootSec)
 systemctl start ansible-pull.service
 journalctl -u ansible-pull.service -f
 ```
 
-## Wichtig vor dem ersten Rollout
+## Important Before First Rollout
 
-- **Vorher SSH-Key-Login testen**, bevor `ssh_password_authentication: "no"`
-  greift – sonst sperrst du dich aus!
+- **Test SSH Key login beforehand** before `ssh_password_authentication: "no"`
+  takes effect – otherwise you will be locked out!
 
-## Änderungen ausrollen
+## Rolling Out Changes
 
-Einfach committen und pushen – jede VM zieht sich die neue Konfiguration
-innerhalb von max. 30 Minuten selbst (Timer-Intervall in
-`systemd/ansible-pull.timer` anpassbar).
+Simply commit and push – each VM will pull the new configuration
+within a maximum of 30 minutes (timer interval customizable in
+`systemd/ansible-pull.timer`).

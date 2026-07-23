@@ -1,5 +1,5 @@
 ---
-- name: sshd neustarten
+- name: restart sshd
   service:
     name: "{{ (ansible_os_family == 'Debian') | ternary('ssh', 'sshd') }}"
     state: restarted

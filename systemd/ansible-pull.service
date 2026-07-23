@@ -1,11 +1,11 @@
 [Unit]
-Description=Ansible Pull - Server-Basis-Konfiguration synchronisieren
+Description=Ansible Pull - Synchronize Server Base Configuration
 Wants=network-online.target
 After=network-online.target
 
 [Service]
 Type=oneshot
-# WICHTIG: Ersetze die URL durch dein eigenes Repository
+# IMPORTANT: Replace the URL with your own repository
 ExecStart=/usr/bin/ansible-pull \
     -U https://github.com/DEIN_ORG/server-config.git \
     -C main \

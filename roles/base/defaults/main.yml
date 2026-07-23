@@ -1,22 +1,22 @@
 ---
 # SSH
-manage_ssh_config: false             # false = Ansible fasst sshd_config nicht an (Host regelt das schon selbst)
+manage_ssh_config: false             # false = Ansible won't touch sshd_config (Host manages it)
 ssh_port: 22
-ssh_permit_root_login: "no"          # "yes" nur falls du unbedingt als root per Passwort ran musst
-ssh_password_authentication: "no"    # nur Key-Login erlauben
+ssh_permit_root_login: "no"          # "yes" only if you strictly need root login via password
+ssh_password_authentication: "no"    # allow only key-based login
 
-# Automatische Sicherheitsupdates
+# Automatic security updates
 unattended_upgrades_enabled: true
 
-# Zeitzone
+# Timezone
 server_timezone: "Europe/Berlin"
 
 # Hardening
-disable_ipv6: false                  # Auf true setzen, falls IPv6 nicht benötigt wird
+disable_ipv6: false                  # Set to true if IPv6 is not needed
 ssh_max_auth_tries: 3
 ssh_client_alive_interval: 300
 ssh_client_alive_count_max: 2
 
-# Automatische Reboots bei Kernel-Updates
+# Automatic reboots after kernel updates
 unattended_upgrades_reboot: false
 unattended_upgrades_reboot_time: "04:00"
