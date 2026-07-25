@@ -12,7 +12,7 @@ Type=oneshot
 # whenever requirements.yml changes.
 ExecStart=/usr/bin/ansible-pull \
     -U https://github.com/ToXiCCuss/gitops-ansible.git \
-    -C main \
+    -C master \
     -i inventory.ini \
     --only-if-changed \
     site.yml
