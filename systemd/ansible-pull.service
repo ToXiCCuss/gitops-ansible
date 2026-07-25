@@ -7,7 +7,7 @@ After=network-online.target
 Type=oneshot
 # IMPORTANT: Replace the URL with your own repository
 ExecStart=/usr/bin/ansible-pull \
-    -U https://github.com/DEIN_ORG/server-config.git \
+    -U https://github.com/ToXiCCuss/gitops-ansible.git \
     -C main \
     -r requirements.yml \
     -i inventory.ini \
