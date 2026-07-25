@@ -6,10 +6,13 @@ After=network-online.target
 [Service]
 Type=oneshot
 # IMPORTANT: Replace the URL with your own repository
+# NOTE: ansible-pull has no "-r/--requirements" option (that flag only exists
+# for ansible-playbook). Role/collection dependencies from requirements.yml
+# must be installed separately (see README, step 2b) and kept up to date
+# whenever requirements.yml changes.
 ExecStart=/usr/bin/ansible-pull \
     -U https://github.com/ToXiCCuss/gitops-ansible.git \
     -C main \
-    -r requirements.yml \
     -i inventory.ini \
     --only-if-changed \
     site.yml
