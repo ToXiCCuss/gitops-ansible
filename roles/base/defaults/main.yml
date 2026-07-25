@@ -1,20 +1,8 @@
 ---
-# SSH
-manage_ssh_config: false             # false = Ansible won't touch sshd_config (Host manages it)
-ssh_port: 22
-
-# Automatic security updates
-unattended_upgrades_enabled: true
-
 # Timezone
 server_timezone: "Europe/Berlin"
 
-# Hardening
-disable_ipv6: false                  # Set to true if IPv6 is not needed
-ssh_max_auth_tries: 3
-ssh_client_alive_interval: 300
-ssh_client_alive_count_max: 2
-
-# Automatic reboots after kernel updates
+# Automatic security updates
+unattended_upgrades_enabled: true
 unattended_upgrades_reboot: false
 unattended_upgrades_reboot_time: "04:00"

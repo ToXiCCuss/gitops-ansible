@@ -5,90 +5,14 @@
       - python3-apt
       - unattended-upgrades
       - curl
-      - git
-      - htop
-      - vim
+      - btop
     state: present
     update_cache: yes
-    cache_valid_time: 3600
-
-- name: Remove UFW and Fail2ban
-  apt:
-    name:
-      - ufw
-      - fail2ban
-    state: absent
-    purge: yes
-
-- name: Update system packages
-  apt:
-    upgrade: dist
     cache_valid_time: 3600
 
 - name: Set timezone
   community.general.timezone:
     name: "{{ server_timezone }}"
-
-# --- Kernel Hardening (sysctl) ---
-- name: Optimize kernel parameters for security
-  ansible.posix.sysctl:
-    name: "{{ item.name }}"
-    value: "{{ item.value }}"
-    state: present
-    sysctl_set: yes
-  loop:
-    - { name: 'net.ipv4.conf.all.accept_source_route', value: '0' }
-    - { name: 'net.ipv4.conf.default.accept_source_route', value: '0' }
-    - { name: 'net.ipv4.conf.all.accept_redirects', value: '0' }
-    - { name: 'net.ipv4.conf.default.accept_redirects', value: '0' }
-    - { name: 'net.ipv4.conf.all.secure_redirects', value: '0' }
-    - { name: 'net.ipv4.conf.default.secure_redirects', value: '0' }
-    - { name: 'net.ipv4.conf.all.send_redirects', value: '0' }
-    - { name: 'net.ipv4.conf.default.send_redirects', value: '0' }
-    - { name: 'net.ipv4.conf.all.rp_filter', value: '1' }
-    - { name: 'net.ipv4.conf.default.rp_filter', value: '1' }
-    - { name: 'net.ipv4.icmp_echo_ignore_broadcasts', value: '1' }
-    - { name: 'net.ipv4.icmp_ignore_bogus_error_responses', value: '1' }
-    - { name: 'net.ipv4.tcp_syncookies', value: '1' }
-    - { name: 'net.ipv6.conf.all.disable_ipv6', value: "{{ '1' if disable_ipv6 else '0' }}" }
-    - { name: 'net.ipv6.conf.default.disable_ipv6', value: "{{ '1' if disable_ipv6 else '0' }}" }
-
-# --- Shared Memory Hardening ---
-- name: Mount /run/shm with noexec and nosuid
-  mount:
-    path: /run/shm
-    src: tmpfs
-    fstype: tmpfs
-    opts: "defaults,noexec,nosuid,nodev"
-    state: mounted
-  ignore_errors: yes # If /run/shm does not exist or is managed differently
-
-# --- SSH Banner ---
-- name: Set login banner
-  copy:
-    dest: /etc/issue.net
-    content: |
-      ***************************************************************************
-      *                              WARNING                                    *
-      *        This is a private system. Unauthorized access is prohibited.     *
-      *        All activities are logged.                                       *
-      ***************************************************************************
-    owner: root
-    group: root
-    mode: '0644'
-
-# --- SSH Hardening ---
-# Skipped if the host/provider already configures SSH hardening
-# correctly (manage_ssh_config: false in defaults/main.yml)
-- name: Configure sshd_config (Port, Timeouts, Banner)
-  template:
-    src: sshd_config_overrides.j2
-    dest: /etc/ssh/sshd_config.d/99-hardening.conf
-    owner: root
-    group: root
-    mode: "0644"
-  notify: restart sshd
-  when: manage_ssh_config
 
 # --- Unattended Upgrades ---
 - name: Configure Unattended-Upgrades
