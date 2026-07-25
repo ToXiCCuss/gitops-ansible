@@ -62,10 +62,13 @@ journalctl -u ansible-pull.service -f
 - **CIS hardening (`DEBIAN13-CIS`)** can be disruptive (e.g. SSH/root login restrictions,
   password policies). Review the role's `defaults/main.yml` and test in a non-production
   environment before rolling out broadly.
-- **`ansible-galaxy install -r requirements.yml` must be run as the same user that executes
-  `ansible-pull`** (typically `root`, since `ansible-pull.service` runs as root). `ansible-pull`
-  itself does not install role/collection dependencies, so this step has to be run manually once
-  per VM (step 2b) and repeated whenever `requirements.yml` changes.
+- **`ansible-galaxy install -r requirements.yml` must be run once manually as root (step 2b)
+  before the very first `ansible-pull` run** on a new VM, because `ansible-pull` itself does not
+  install role/collection dependencies and there is no local checkout yet to read
+  `requirements.yml` from. `ansible-pull.service` now includes an `ExecStartPre` step that
+  automatically re-runs `ansible-galaxy install -r requirements.yml` (from the previously pulled
+  checkout) before every subsequent run, so role updates in `requirements.yml` are picked up
+  automatically afterwards — but the first bootstrap run still requires the manual step.
 
 ## Rolling Out Changes
 
