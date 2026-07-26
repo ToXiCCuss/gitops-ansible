@@ -2,11 +2,3 @@
 collections:
   - name: community.general
   - name: ansible.posix
-
-roles:
-  # CIS Benchmark Level 1 hardening for Debian 13 (Ansible Lockdown)
-  # https://github.com/ansible-lockdown/DEBIAN13-CIS
-  - src: https://github.com/ansible-lockdown/DEBIAN13-CIS.git
-    scm: git
-    version: devel
-    name: DEBIAN13-CIS

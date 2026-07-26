@@ -4,8 +4,3 @@
   become: true
   roles:
     - base
-    - role: DEBIAN13-CIS
-      vars:
-        debian13cis_level: 1
-        debian13cis_notauto: false
-        debian13cis_time_synchronization: chrony
