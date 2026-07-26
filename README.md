@@ -4,10 +4,10 @@ Dieses Repository enthält Ansible-Playbooks zur Basiskonfiguration von Servern 
 
 ## Voraussetzungen
 
-- Ein Debian-System (lokal oder remote), auf dem Ansible ausgeführt wird (der "Control Node").
+- Ansible wird **direkt auf jeder VM lokal ausgeführt** (die VM ist gleichzeitig Control Node und Managed Node). Es gibt also keinen zentralen Rechner, der sich per SSH auf andere Hosts verbindet.
+- Ein Debian-System auf der jeweiligen VM.
 - Python 3 (auf Debian standardmäßig vorhanden).
-- SSH-Zugriff auf die Zielhosts (Managed Nodes), falls nicht `localhost` verwendet wird.
-- `sudo`/root-Rechte auf den Zielhosts, da die Playbooks mit `become: true` laufen.
+- `sudo`/root-Rechte auf der VM, da das Playbook mit `become: true` läuft.
 
 ## 1. Ansible unter Debian installieren
 
@@ -48,22 +48,16 @@ ansible-galaxy collection install -r requirements.yml
 
 ## 4. Inventory anpassen
 
-Die Datei `inventory.ini` definiert die Zielhosts. Standardmäßig ist sie auf die lokale Ausführung eingestellt:
+Die Datei `inventory.ini` definiert die Zielhosts. Da Ansible auf jeder VM **lokal** ausgeführt wird, bleibt sie immer auf die lokale Ausführung eingestellt – das ist bereits der Standard und muss pro VM nicht geändert werden:
 
 ```ini
 [all]
 localhost ansible_connection=local
 ```
 
-Für die Verwaltung entfernter Debian-Server passt du die Datei entsprechend an, z. B.:
+Dadurch verbindet sich Ansible nicht per SSH, sondern führt alle Tasks direkt auf der VM aus, auf der `ansible-playbook` gestartet wird. Das Repository (bzw. zumindest `inventory.ini`, `ansible.cfg`, `site.yml`, `requirements.yml` und `roles/`) muss also auf jede VM ausgecheckt/kopiert werden, auf der die Konfiguration angewendet werden soll.
 
-```ini
-[all]
-server1.example.com ansible_user=deploy
-server2.example.com ansible_user=deploy
-```
-
-Falls du dich mit einem anderen Benutzer verbindest oder einen anderen SSH-Key nutzt, kannst du zusätzliche Variablen wie `ansible_ssh_private_key_file` ergänzen.
+> Falls du stattdessen von einem zentralen Rechner aus mehrere VMs per SSH verwalten möchtest, müsstest du hier echte Hostnamen/IPs statt `localhost` eintragen (siehe Abschnitt "Alternative: zentrale Verwaltung mehrerer VMs per SSH" unten) – für den hier beschriebenen Workflow (lokale Ausführung je VM) ist das aber nicht nötig.
 
 ## 5. Playbook ausführen
 
@@ -93,13 +87,7 @@ ansible-playbook -i inventory.ini site.yml
   ansible-playbook -i inventory.ini site.yml --ask-become-pass
   ```
 
-- Nur bestimmte Hosts ansprechen:
-
-  ```bash
-  ansible-playbook -i inventory.ini site.yml --limit server1.example.com
-  ```
-
-- Erreichbarkeit der Hosts vorab testen:
+- Erreichbarkeit lokal testen:
 
   ```bash
   ansible -i inventory.ini all -m ping
@@ -131,6 +119,18 @@ Alternativ kannst du den Interpreter explizit setzen, z. B. in `inventory.ini`:
 localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python3
 ```
 
+## Alternative: zentrale Verwaltung mehrerer VMs per SSH
+
+Falls du den Workflow doch einmal ändern und Ansible von einem zentralen Control Node aus per SSH auf mehreren VMs ausführen möchtest, passt du `inventory.ini` so an:
+
+```ini
+[all]
+server1.example.com ansible_user=deploy
+server2.example.com ansible_user=deploy
+```
+
+Falls du dich mit einem anderen Benutzer verbindest oder einen anderen SSH-Key nutzt, kannst du zusätzliche Variablen wie `ansible_ssh_private_key_file` ergänzen. Mit `--limit server1.example.com` sprichst du dann gezielt einzelne Hosts an. Für den Standard-Workflow dieses Projekts (Ausführung direkt auf der jeweiligen VM) ist das aber nicht notwendig.
+
 ## 6. Was die Rolle `base` konfiguriert
 
 Die Rolle `roles/base` (siehe `roles/base/tasks/main.yml`) führt auf jedem Zielhost folgende Schritte aus:
@@ -160,16 +160,21 @@ oder dauerhaft in `inventory.ini` als Host-/Group-Variablen bzw. in einer eigene
 
 ## Kurzübersicht (Quickstart)
 
+Auf jeder VM, die konfiguriert werden soll:
+
 ```bash
+# 0. Repository auf die VM holen
+git clone <repository-url> gitops-ansible && cd gitops-ansible
+
 # 1. Ansible installieren
 sudo apt update && sudo apt install -y ansible
 
 # 2. Collections installieren
 ansible-galaxy collection install -r requirements.yml
 
-# 3. Erreichbarkeit prüfen
+# 3. Erreichbarkeit prüfen (lokal)
 ansible -i inventory.ini all -m ping
 
-# 4. Playbook ausführen
+# 4. Playbook lokal ausführen
 ansible-playbook -i inventory.ini site.yml
 ```
