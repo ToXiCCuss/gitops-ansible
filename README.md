@@ -183,41 +183,44 @@ node_exporter_port: 9100
 
 Die Rolle `roles/docker` installiert Docker (`docker-ce`, `docker-ce-cli`, `containerd.io`, `docker-buildx-plugin`, `docker-compose-plugin`) über das offizielle Docker-Apt-Repository.
 
-Im Gegensatz zu `base` und `node_exporter` wird diese Rolle **standardmäßig auf keinem Host ausgeführt**. Die Steuerung erfolgt anhand des Hostnamens über eine eigene Inventory-Gruppe `[docker]` in `inventory.ini`. Nur Hosts, die in dieser Gruppe stehen, bekommen die Rolle `docker` zugewiesen:
+Im Gegensatz zu `base` und `node_exporter` wird diese Rolle **standardmäßig auf keinem Host ausgeführt**. Da dieses Projekt auf jeder VM lokal ausgeführt wird (`inventory_hostname` ist überall `localhost`), kann die Steuerung nicht über eine Inventory-Gruppe erfolgen – stattdessen wird sie über den **echten Systemhostnamen** (`ansible_hostname`) gesteuert, gepflegt in der Datei `group_vars/all.yml`, die ganz normal über Git versioniert wird:
 
 ```yaml
 # site.yml
-- name: Install Docker (only on hosts in the [docker] inventory group)
-  hosts: docker
+- name: Install Docker (only on hosts listed in docker_hosts)
+  hosts: all
   become: true
   roles:
-    - docker
+    - role: docker
+      when: ansible_hostname in docker_hosts
 ```
+
+```yaml
+# group_vars/all.yml
+docker_hosts: []
+```
+
+Da `group_vars/all.yml` Teil des Repositories ist, reicht ein einziger Commit/Push, um zentral festzulegen, auf welchen VMs Docker installiert wird – jede VM zieht beim nächsten `git pull` denselben Stand und wendet ihn lokal an.
 
 ### Docker auf einer VM aktivieren
 
-Trage den Hostnamen der gewünschten VM einfach in die Gruppe `[docker]` in `inventory.ini` ein, z. B.:
+Trage den **echten Hostnamen** der gewünschten VM (Ausgabe von `hostname` auf der jeweiligen VM) in `group_vars/all.yml` ein und committe die Änderung:
 
-```ini
-[all]
-localhost ansible_connection=local
-webserver01 ansible_connection=local
-
-[docker]
-webserver01
+```yaml
+# group_vars/all.yml
+docker_hosts:
+  - webserver01
+  - ansible02
 ```
 
-Da dieses Projekt standardmäßig lokal je VM ausgeführt wird, trägst du auf der jeweiligen VM einfach `localhost` (bzw. deren eigenen Hostnamen) unter `[docker]` ein, wenn dort Docker installiert werden soll:
+Anschließend auf der betreffenden VM:
 
-```ini
-[all]
-localhost ansible_connection=local
-
-[docker]
-localhost
+```bash
+git pull
+ansible-playbook -i inventory.ini site.yml
 ```
 
-Hosts, die nicht in der Gruppe `[docker]` stehen, werden von diesem Play einfach übersprungen (Ansible führt Plays nur auf den in `hosts:` referenzierten Hosts/Gruppen aus).
+Nur VMs, deren echter Hostname in `docker_hosts` steht, bekommen die Rolle `docker` zugewiesen; alle anderen VMs überspringen diesen Play (Task wird als `skipped` markiert).
 
 Optional kannst du Benutzer per `docker_users` (Liste) automatisch zur Gruppe `docker` hinzufügen lassen, damit sie Docker ohne `sudo` nutzen können:
 

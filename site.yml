@@ -6,8 +6,9 @@
     - base
     - node_exporter
 
-- name: Install Docker (only on hosts in the [docker] inventory group)
-  hosts: docker
+- name: Install Docker (only on hosts listed in docker_hosts)
+  hosts: all
   become: true
   roles:
-    - docker
+    - role: docker
+      when: ansible_hostname in docker_hosts
