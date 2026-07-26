@@ -15,20 +15,13 @@ Auf Debian ist es empfehlenswert, Ansible über `apt` zu installieren (Paket `an
 
 ```bash
 sudo apt update
-sudo apt install -y ansible
+sudo apt install -y ansible git
 ```
 
 Version prüfen:
 
 ```bash
 ansible --version
-```
-
-Alternativ (aktuellere Version via `pip`):
-
-```bash
-sudo apt install -y python3-pip
-pip3 install --user ansible
 ```
 
 ## 2. Repository klonen
@@ -228,6 +221,29 @@ Optional kannst du Benutzer per `docker_users` (Liste) automatisch zur Gruppe `d
 docker_users:
   - deploy
 ```
+
+### Docker-Daemon-Konfiguration (`/etc/docker/daemon.json`)
+
+Die Rolle erstellt zusätzlich `/etc/docker/daemon.json` anhand der Variable `docker_daemon_options` (Standard in `roles/docker/defaults/main.yml`):
+
+```yaml
+docker_daemon_options:
+  live-restore: true
+```
+
+Das entspricht:
+
+```bash
+nano /etc/docker/daemon.json
+```
+
+```json
+{
+  "live-restore": true
+}
+```
+
+Bei einer Änderung dieser Datei wird der Docker-Dienst automatisch neu gestartet (Handler `restart docker`). Weitere Optionen kannst du einfach als zusätzliche Keys in `docker_daemon_options` ergänzen, z. B. per `host_vars`/`group_vars` oder direkt beim Aufruf mit `-e`.
 
 ## Kurzübersicht (Quickstart)
 

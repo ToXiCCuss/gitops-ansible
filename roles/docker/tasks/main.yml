@@ -41,6 +41,15 @@
     state: present
     update_cache: yes
 
+- name: Configure Docker daemon options (/etc/docker/daemon.json)
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart docker
+
 - name: Ensure Docker service is enabled and running
   service:
     name: docker
