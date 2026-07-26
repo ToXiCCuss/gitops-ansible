@@ -1,0 +1,12 @@
+---
+- name: Install node_exporter via apt
+  apt:
+    name: prometheus-node-exporter
+    state: present
+    update_cache: yes
+
+- name: Ensure node_exporter service is enabled and running
+  service:
+    name: prometheus-node-exporter
+    state: started
+    enabled: true

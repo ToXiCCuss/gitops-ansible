@@ -158,6 +158,27 @@ ansible-playbook -i inventory.ini site.yml -e "server_timezone=Europe/Vienna"
 
 oder dauerhaft in `inventory.ini` als Host-/Group-Variablen bzw. in einer eigenen `group_vars`/`host_vars`-Struktur.
 
+## 7. Node Exporter (Prometheus Metrics)
+
+Die Rolle `roles/node_exporter` installiert den Prometheus Node Exporter auf jedem Zielhost über das Debian-Paket `prometheus-node-exporter` (verfügbar ab Debian 11/Bullseye):
+
+- Installiert das Paket `prometheus-node-exporter` via `apt`.
+- Das Paket legt automatisch einen dedizierten System-User an und liefert eine fertige `systemd`-Unit (`prometheus-node-exporter.service`).
+- Der Service wird aktiviert und gestartet.
+- Der Exporter lauscht standardmäßig auf Port `9100` (Metriken unter `http://<host>:9100/metrics`).
+
+Die Rolle ist bereits in `site.yml` eingebunden und wird bei jedem Playbook-Lauf mit ausgeführt.
+
+> Hinweis: Die über `apt` bereitgestellte Version ist an das jeweilige Debian-Release gebunden (ggf. etwas älter als die neueste GitHub-Release-Version), wird dafür aber automatisch über `apt upgrade` aktuell gehalten.
+
+### Standardwerte anpassen (Node Exporter)
+
+Siehe `roles/node_exporter/defaults/main.yml`:
+
+```yaml
+node_exporter_port: 9100
+```
+
 ## Kurzübersicht (Quickstart)
 
 Auf jeder VM, die konfiguriert werden soll:
