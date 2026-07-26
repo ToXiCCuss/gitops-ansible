@@ -179,6 +179,53 @@ Siehe `roles/node_exporter/defaults/main.yml`:
 node_exporter_port: 9100
 ```
 
+## 8. Docker (optional, nicht auf jedem Host)
+
+Die Rolle `roles/docker` installiert Docker (`docker-ce`, `docker-ce-cli`, `containerd.io`, `docker-buildx-plugin`, `docker-compose-plugin`) über das offizielle Docker-Apt-Repository.
+
+Im Gegensatz zu `base` und `node_exporter` wird diese Rolle **standardmäßig auf keinem Host ausgeführt**. Die Steuerung erfolgt anhand des Hostnamens über eine eigene Inventory-Gruppe `[docker]` in `inventory.ini`. Nur Hosts, die in dieser Gruppe stehen, bekommen die Rolle `docker` zugewiesen:
+
+```yaml
+# site.yml
+- name: Install Docker (only on hosts in the [docker] inventory group)
+  hosts: docker
+  become: true
+  roles:
+    - docker
+```
+
+### Docker auf einer VM aktivieren
+
+Trage den Hostnamen der gewünschten VM einfach in die Gruppe `[docker]` in `inventory.ini` ein, z. B.:
+
+```ini
+[all]
+localhost ansible_connection=local
+webserver01 ansible_connection=local
+
+[docker]
+webserver01
+```
+
+Da dieses Projekt standardmäßig lokal je VM ausgeführt wird, trägst du auf der jeweiligen VM einfach `localhost` (bzw. deren eigenen Hostnamen) unter `[docker]` ein, wenn dort Docker installiert werden soll:
+
+```ini
+[all]
+localhost ansible_connection=local
+
+[docker]
+localhost
+```
+
+Hosts, die nicht in der Gruppe `[docker]` stehen, werden von diesem Play einfach übersprungen (Ansible führt Plays nur auf den in `hosts:` referenzierten Hosts/Gruppen aus).
+
+Optional kannst du Benutzer per `docker_users` (Liste) automatisch zur Gruppe `docker` hinzufügen lassen, damit sie Docker ohne `sudo` nutzen können:
+
+```yaml
+docker_users:
+  - deploy
+```
+
 ## Kurzübersicht (Quickstart)
 
 Auf jeder VM, die konfiguriert werden soll:

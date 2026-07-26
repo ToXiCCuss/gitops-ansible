@@ -5,3 +5,9 @@
   roles:
     - base
     - node_exporter
+
+- name: Install Docker (only on hosts in the [docker] inventory group)
+  hosts: docker
+  become: true
+  roles:
+    - docker
