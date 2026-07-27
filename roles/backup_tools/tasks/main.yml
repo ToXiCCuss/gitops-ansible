@@ -31,7 +31,7 @@
 
 - name: Check if restic repository is already initialized
   command: >
-    restic -r "{{ restic_repo_base }}/{{ inventory_hostname }}" --password-file /root/restic snapshots
+    restic -r "{{ restic_repo_base }}/{{ ansible_hostname }}" --password-file /root/restic snapshots
   environment:
     RCLONE_CONFIG: "{{ rclone_conf_dest }}"
   register: restic_snapshots_check
@@ -41,7 +41,7 @@
 
 - name: Initialize restic repository
   command: >
-    restic -r "{{ restic_repo_base }}/{{ inventory_hostname }}" --password-file /root/restic init
+    restic -r "{{ restic_repo_base }}/{{ ansible_hostname }}" --password-file /root/restic init
   environment:
     RCLONE_CONFIG: "{{ rclone_conf_dest }}"
   when:

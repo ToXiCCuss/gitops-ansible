@@ -245,6 +245,73 @@ nano /etc/docker/daemon.json
 
 Bei einer Änderung dieser Datei wird der Docker-Dienst automatisch neu gestartet (Handler `restart docker`). Weitere Optionen kannst du einfach als zusätzliche Keys in `docker_daemon_options` ergänzen, z. B. per `host_vars`/`group_vars` oder direkt beim Aufruf mit `-e`.
 
+## 9. Backup (restic + rclone)
+
+Die Rolle `roles/backup_tools` installiert `restic` und `rclone`, deployt das restic-Repository-Passwort sowie optional eine `rclone.conf` und initialisiert bei Bedarf das restic-Repository. Die Rolle ist bereits in `site.yml` eingebunden.
+
+**Wichtig:** Da Ansible auf jeder VM lokal läuft, wird auf **allen** Servern exakt dieselbe restic-/rclone-Konfiguration verwendet (Passwort, rclone-Remote, `restic_repo_base` usw.) – zentral gepflegt in `group_vars/all/main.yml` bzw. `group_vars/all/vault.yml`. Der **einzige** Unterschied zwischen den Servern ist der restic-Repository-Pfad: Dieser wird automatisch anhand des echten Systemhostnamens gebildet (`{{ restic_repo_base }}/{{ ansible_hostname }}`, siehe `roles/backup_tools/tasks/main.yml`), sodass jeder Server sein eigenes, isoliertes Backup-Repository unter demselben Remote bekommt, ohne dass pro Host etwas manuell konfiguriert werden muss.
+
+### restic-Passwort erstellen
+
+Das restic-Passwort (`restic_password`) muss **stark und zufällig** sein, da es das gesamte Backup-Repository absichert. Am einfachsten erzeugst du es lokal mit `openssl` oder `pwgen`:
+
+```bash
+# Variante 1: openssl (liefert z. B. 32 Byte, Base64-kodiert)
+openssl rand -base64 32
+
+# Variante 2: pwgen (falls installiert: sudo apt install -y pwgen)
+pwgen -s 40 1
+```
+
+Kopiere dir die erzeugte Zeichenkette – sie wird im nächsten Schritt in die Vault-Datei eingetragen.
+
+> Wichtig: Bewahre das Passwort zusätzlich an einem sicheren Ort außerhalb des Repositories auf (z. B. Passwort-Manager). Geht es verloren, sind die restic-Backups **nicht wiederherstellbar**.
+
+### Passwort mit Ansible Vault verschlüsselt hinterlegen
+
+Das Repository enthält eine Vorlage unter `group_vars/all/vault.yml.example`. So richtest du die echte, verschlüsselte Datei ein:
+
+```bash
+# 1. Vorlage kopieren
+cp group_vars/all/vault.yml.example group_vars/all/vault.yml
+
+# 2. Das generierte Passwort eintragen (restic_password: "...")
+nano group_vars/all/vault.yml
+
+# 3. Datei mit Ansible Vault verschlüsseln
+ansible-vault encrypt group_vars/all/vault.yml
+```
+
+`group_vars/all/vault.yml` kann danach bedenkenlos committet werden – der Inhalt ist ohne Vault-Passwort unlesbar. Das Vault-Passwort selbst darf **nicht** ins Repository gelangen (siehe `.gitignore`).
+
+Beim Ausführen des Playbooks muss das Vault-Passwort angegeben werden:
+
+```bash
+# interaktiv abfragen
+ansible-playbook -i inventory.ini site.yml --ask-vault-pass
+
+# oder aus einer lokalen, nicht versionierten Datei lesen
+ansible-playbook -i inventory.ini site.yml --vault-password-file ~/.vault_pass.txt
+```
+
+### rclone-Konfiguration (pCloud-Remote)
+
+Der OAuth-Login gegen pCloud lässt sich nicht automatisieren und muss einmalig manuell per `rclone config` durchgeführt werden. Die daraus entstehende `rclone.conf` legst du anschließend (idealerweise ebenfalls vault-verschlüsselt) ins Repo unter `roles/backup_tools/files/rclone.conf`. `rclone_conf_src` zeigt in `group_vars/all/main.yml` bereits standardmäßig auf diesen Pfad, sodass alle Server automatisch dieselbe `rclone.conf` erhalten – eine host-spezifische Anpassung ist nicht nötig.
+
+### Weitere Variablen
+
+Siehe `roles/backup_tools/defaults/main.yml`:
+
+```yaml
+restic_password: ""
+restic_repo_base: "rclone:pCloud:/Backups"
+rclone_remote_name: "pCloud"
+rclone_conf_src: ""
+rclone_conf_dest: "/root/.config/rclone/rclone.conf"
+```
+
+Solange `restic_password` bzw. `rclone_conf_src` leer sind, werden die zugehörigen Tasks (Passwortdatei, rclone-Config-Deployment, Repository-Init) übersprungen – nur die Installation von `restic`/`rclone` per `apt` erfolgt dann.
+
 ## Kurzübersicht (Quickstart)
 
 Auf jeder VM, die konfiguriert werden soll:

@@ -1,3 +1,12 @@
 ---
 docker_hosts:
    - docker01
+
+# Zentrale, für ALLE Server identische restic/rclone-Konfiguration.
+# Nur der restic-Repository-Pfad wird pro Server automatisch anhand des
+# echten Hostnamens (ansible_hostname) gebildet, siehe
+# roles/backup_tools/tasks/main.yml ("{{ restic_repo_base }}/{{ ansible_hostname }}").
+restic_repo_base: "rclone:pCloud:/Backups"
+rclone_remote_name: "pCloud"
+rclone_conf_src: "{{ playbook_dir }}/roles/backup_tools/files/rclone.conf"
+rclone_conf_dest: "/root/.config/rclone/rclone.conf"
