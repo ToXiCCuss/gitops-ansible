@@ -1,0 +1,12 @@
+---
+# Beispiel/Vorlage für group_vars/all/vault.yml (mit ansible-vault verschlüsseln!)
+#
+# 1. Datei kopieren:  cp group_vars/all/vault.yml.example group_vars/all/vault.yml
+# 2. Werte anpassen und anschließend verschlüsseln:
+#      ansible-vault encrypt group_vars/all/vault.yml
+#    oder direkt verschlüsselt anlegen:
+#      ansible-vault create group_vars/all/vault.yml
+#
+# Diese Datei (das .example) selbst bleibt unverschlüsselt im Repo und dient nur als Vorlage.
+
+restic_password: "CHANGE_ME"

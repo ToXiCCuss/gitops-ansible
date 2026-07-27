@@ -1,0 +1,16 @@
+---
+# restic repository password (should be overridden via group_vars/host_vars + ansible-vault)
+restic_password: ""
+
+# Base path for restic repositories on the remote (per-host subfolder is appended)
+restic_repo_base: "rclone:pCloud:/Backups"
+
+# rclone remote name used for the restic repository
+rclone_remote_name: "pCloud"
+
+# Path to the rclone config file to deploy (should be vault-encrypted).
+# Leave empty to skip deploying rclone.conf via this role.
+rclone_conf_src: ""
+
+# Destination of the rclone config file on the target host
+rclone_conf_dest: "/root/.config/rclone/rclone.conf"
