@@ -2,10 +2,14 @@
 docker_hosts:
    - docker01
 
-mariadb_hosts: []
+mariadb_hosts:
+   - mariadb01
 
-postgresql_hosts: []
+postgresql_hosts:
+   - postgres01
 
-mongodb_hosts: []
+mongodb_hosts:
+   - docker01
 
-vault_hosts: []
+vault_hosts:
+   - docker01
