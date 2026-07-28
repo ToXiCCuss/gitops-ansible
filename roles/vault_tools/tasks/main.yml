@@ -1,0 +1,43 @@
+---
+- name: Install prerequisite packages for HashiCorp repository
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+    update_cache: yes
+
+- name: Create keyrings directory
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Download HashiCorp GPG key
+  get_url:
+    url: "https://apt.releases.hashicorp.com/gpg"
+    dest: /etc/apt/keyrings/hashicorp.asc
+    mode: "0644"
+    force: false
+
+- name: Add HashiCorp apt repository
+  apt_repository:
+    repo: >-
+      deb [signed-by=/etc/apt/keyrings/hashicorp.asc]
+      https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main
+    filename: hashicorp
+    state: present
+    update_cache: yes
+
+- name: Install vault CLI
+  apt:
+    name: vault
+    state: present
+    update_cache: yes
+
+- name: Download kubectl binary
+  get_url:
+    url: "https://dl.k8s.io/release/{{ kubectl_version }}/bin/linux/amd64/kubectl"
+    dest: /usr/local/bin/kubectl
+    mode: "0755"

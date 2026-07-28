@@ -1,3 +1,11 @@
 ---
 docker_hosts:
    - docker01
+
+mariadb_hosts: []
+
+postgresql_hosts: []
+
+mongodb_hosts: []
+
+vault_hosts: []

@@ -1,0 +1,31 @@
+---
+- name: Install mariadb-server
+  apt:
+    name: mariadb-server
+    state: present
+    update_cache: yes
+
+- name: Configure bind-address in 50-server.cnf
+  lineinfile:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    regexp: '^bind-address.*'
+    line: "bind-address            = {{ mariadb_bind_address }}"
+  notify: restart mariadb
+
+- name: Ensure MariaDB service is enabled and running
+  service:
+    name: mariadb
+    state: started
+    enabled: true
+
+- name: Flush handlers to apply bind-address change before user setup
+  meta: flush_handlers
+
+- name: Create root@% user with grant privileges
+  command: >
+    mariadb -u root -e
+    "CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '{{ mariadb_root_password }}';
+    GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+    FLUSH PRIVILEGES;"
+  no_log: true
+  changed_when: true

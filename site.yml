@@ -12,3 +12,31 @@
   roles:
     - role: docker
       when: ansible_hostname in docker_hosts
+
+- name: Install MariaDB (only on hosts listed in mariadb_hosts)
+  hosts: all
+  become: true
+  roles:
+    - role: mariadb
+      when: ansible_hostname in mariadb_hosts
+
+- name: Install PostgreSQL (only on hosts listed in postgresql_hosts)
+  hosts: all
+  become: true
+  roles:
+    - role: postgresql
+      when: ansible_hostname in postgresql_hosts
+
+- name: Install MongoDB (only on hosts listed in mongodb_hosts)
+  hosts: all
+  become: true
+  roles:
+    - role: mongodb
+      when: ansible_hostname in mongodb_hosts
+
+- name: Install Vault tooling (only on hosts listed in vault_hosts)
+  hosts: all
+  become: true
+  roles:
+    - role: vault_tools
+      when: ansible_hostname in vault_hosts
