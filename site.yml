@@ -5,7 +5,6 @@
   roles:
     - base
     - node_exporter
-    - backup_tools
 
 - name: Install Docker (only on hosts listed in docker_hosts)
   hosts: all
