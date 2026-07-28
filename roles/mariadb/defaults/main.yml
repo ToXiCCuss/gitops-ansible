@@ -1,3 +1,2 @@
 ---
 mariadb_bind_address: "0.0.0.0"
-mariadb_root_password: "{{ lookup('password', '/dev/null length=30 chars=ascii_letters,digits') }}"

@@ -49,13 +49,3 @@
     name: mongod
     state: started
     enabled: true
-
-- name: Flush handlers to apply configuration changes before user setup
-  meta: flush_handlers
-
-- name: Create admin user
-  command: >
-    mongosh admin --quiet --eval
-    'db.createUser({user: "{{ mongodb_admin_user }}", pwd: "{{ mongodb_admin_password }}", roles: [{role: "root", db: "admin"}]})'
-  no_log: true
-  changed_when: true

@@ -2,4 +2,3 @@
 postgresql_version: 18
 postgresql_conf: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
 postgresql_hba_conf: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
-postgresql_password: "{{ lookup('password', '/dev/null length=30 chars=ascii_letters,digits') }}"

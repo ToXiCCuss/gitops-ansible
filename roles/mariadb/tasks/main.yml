@@ -17,15 +17,3 @@
     name: mariadb
     state: started
     enabled: true
-
-- name: Flush handlers to apply bind-address change before user setup
-  meta: flush_handlers
-
-- name: Create root@% user with grant privileges
-  command: >
-    mariadb -u root -e
-    "CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '{{ mariadb_root_password }}';
-    GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
-    FLUSH PRIVILEGES;"
-  no_log: true
-  changed_when: true

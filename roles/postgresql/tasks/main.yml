@@ -46,12 +46,3 @@
     name: postgresql
     state: started
     enabled: true
-
-- name: Flush handlers to apply configuration changes before password setup
-  meta: flush_handlers
-
-- name: Set password for postgres user
-  become_user: postgres
-  command: psql -c "ALTER USER postgres WITH PASSWORD '{{ postgresql_password }}';"
-  no_log: true
-  changed_when: true
