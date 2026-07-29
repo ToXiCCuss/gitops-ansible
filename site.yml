@@ -33,10 +33,3 @@
   roles:
     - role: mongodb
       when: ansible_hostname in mongodb_hosts
-
-- name: Install Vault tooling (only on hosts listed in vault_hosts)
-  hosts: all
-  become: true
-  roles:
-    - role: vault_tools
-      when: ansible_hostname in vault_hosts

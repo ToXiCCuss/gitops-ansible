@@ -10,6 +10,3 @@ postgresql_hosts:
 
 mongodb_hosts:
    - docker01
-
-vault_hosts:
-   - docker01
