@@ -10,4 +10,4 @@ postgresql_hosts:
    - postgres01
 
 mongodb_hosts:
-   - docker01
+   - xxx
