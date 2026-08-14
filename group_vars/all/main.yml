@@ -1,6 +1,7 @@
 ---
 docker_hosts:
    - netbird
+   - docker01
 
 mariadb_hosts:
    - mariadb01
