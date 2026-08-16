@@ -4,7 +4,13 @@
   become: true
   roles:
     - base
-    - node_exporter
+
+- name: Install Node Exporter (only on hosts listed in node_exporter_hosts)
+  hosts: all
+  become: true
+  roles:
+    - role: node_exporter
+      when: ansible_hostname in node_exporter_hosts
 
 - name: Install Docker (only on hosts listed in docker_hosts)
   hosts: all
