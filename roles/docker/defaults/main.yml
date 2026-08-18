@@ -14,3 +14,8 @@ docker_packages:
 # Inhalt von /etc/docker/daemon.json (als YAML-Dict, wird zu JSON konvertiert)
 docker_daemon_options:
   live-restore: true
+
+# Docker-Netzwerke, die auf Docker-Hosts vorhanden sein sollen
+docker_networks:
+  - name: proxy
+    driver: bridge
